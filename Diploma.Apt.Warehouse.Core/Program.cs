@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using NLog.Web;
 
 namespace Diploma.Apt.Warehouse.Core
 {
@@ -20,16 +21,19 @@ namespace Diploma.Apt.Warehouse.Core
         public static IHostBuilder CreateHostBuilder(string[] args) =>
             Host.CreateDefaultBuilder(args)
                 .ConfigureWebHostDefaults(webBuilder => { webBuilder.UseStartup<Startup>(); })
+                .UseNLog()
+                .ConfigureLogging(logging =>
+                {
+                    logging.ClearProviders();
+                    logging.SetMinimumLevel(LogLevel.Trace);
+                })
                 .ConfigureAppConfiguration((hostingContext, config) =>
                 {
                     config.SetBasePath(Directory.GetCurrentDirectory());
-                    var env = hostingContext.HostingEnvironment;
                     config.Sources.Clear();
                     config
                         .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
-                        .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true)
                         .AddJsonFile("secrets.json", optional: true, reloadOnChange: true)
-                        .AddJsonFile($"secrets.{env.EnvironmentName}.json", optional: true)
                         .AddEnvironmentVariables();
                 });
     }

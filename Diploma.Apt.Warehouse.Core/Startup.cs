@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using AutoMapper;
 using Diploma.Apt.Warehouse.Core.Data;
+using Diploma.Apt.Warehouse.Core.Data.Helpers.MongoDbConnection;
 using Diploma.Apt.Warehouse.Core.Extensions.Mapper;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -33,6 +34,15 @@ namespace Diploma.Apt.Warehouse.Core
             services.AddDbContext<WarehouseContext>(options =>
                 options.UseNpgsql(
                     Configuration.GetConnectionString("warehouseContext")));
+            
+            var userDbSettings = Configuration.GetSection("userContext").Get<MongoDbContextOptions<UserContext>>();
+            // general context
+            services.AddDbContext<UserContext>(o =>
+            {
+                o.MongoDbConnectionString =
+                    userDbSettings.MongoDbConnectionString;
+                //o.Mapping = userDbSettings.Mapping;
+            }); 
             
             var mappingConfig = new MapperConfiguration(mc =>
             {
