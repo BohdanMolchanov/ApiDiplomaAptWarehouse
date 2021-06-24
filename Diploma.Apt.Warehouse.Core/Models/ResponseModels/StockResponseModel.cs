@@ -18,7 +18,6 @@ namespace Diploma.Apt.Warehouse.Core.Models.ResponseModels
         public decimal PurchasePrice { get; set; }
         public decimal SellPrice { get; set; }
         public string BestBefore { get; set; }
-        [JsonConverter(typeof(StringEnumConverter))]
-        public StockStates Status { get; set; }
+        public string Status { get; set; }
     }
 }

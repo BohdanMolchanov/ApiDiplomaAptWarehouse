@@ -1,18 +1,18 @@
 ﻿using System;
+using Diploma.Apt.Warehouse.Core.Data.Abstractions;
+using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
 
 namespace Diploma.Apt.Warehouse.Core.Data.Entities.MongoDB
 {
-    public class DepartmentEntity
+    public class DepartmentEntity : AbstractMongoEntity
     {
-        [BsonId]
-        public Guid Id { get; set; } = Guid.NewGuid();
         [BsonElement("n")]
         public string Name { get; set; }
         [BsonElement("sn")]
         public string ShortName { get; set; }
-        [BsonElement("oid")]
-        public string OrganizationId { get; set; }
+        [BsonElement("oid"), BsonRepresentation(BsonType.String)]
+        public Guid OrganizationId { get; set; }
         [BsonElement("r")]
         public string Region { get; set; }
         [BsonElement("a")]
@@ -25,9 +25,5 @@ namespace Diploma.Apt.Warehouse.Core.Data.Entities.MongoDB
         public string AddressStreetNumber { get; set; }
         [BsonElement("ia")]
         public bool IsActive { get; set; }
-        [BsonElement("cat")]
-        public DateTime CreatedAt { get; set; }
-        [BsonElement("uat"), BsonIgnoreIfNull]
-        public DateTime? UpdatedAt { get; set; }
     }
 }

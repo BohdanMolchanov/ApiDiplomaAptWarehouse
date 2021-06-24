@@ -22,6 +22,8 @@ namespace Diploma.Apt.Warehouse.Core.Data.Entities.PostgreSQL
             get => _bestBefore.Value;
             set => _bestBefore.Value = value;
         }
+        
+        public DateTime ReceivedAt { get; set; }
         [JsonConverter(typeof(StringEnumConverter))]
         public BatchStates Status { get; set; }
     }

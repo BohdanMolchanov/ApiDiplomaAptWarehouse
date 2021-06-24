@@ -31,11 +31,11 @@ namespace Diploma.Apt.Warehouse.Core.Data
                                 new CreateIndexOptions {Background = true}),
                             new CreateIndexModel<UserEntity>
                             (
-                                Builders<UserEntity>.IndexKeys.Ascending(x => x.UserDataModel.Email),
+                                Builders<UserEntity>.IndexKeys.Ascending(x => x.Data.Email),
                                 new CreateIndexOptions {Background = true}),
                             new CreateIndexModel<UserEntity>
                             (
-                                Builders<UserEntity>.IndexKeys.Descending(x => x.UserDataModel.Phone),
+                                Builders<UserEntity>.IndexKeys.Descending(x => x.Data.Phone),
                                 new CreateIndexOptions {Background = true}),
                         }
                     ),

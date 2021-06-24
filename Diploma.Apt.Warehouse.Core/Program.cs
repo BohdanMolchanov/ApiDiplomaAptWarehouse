@@ -20,13 +20,15 @@ namespace Diploma.Apt.Warehouse.Core
 
         public static IHostBuilder CreateHostBuilder(string[] args) =>
             Host.CreateDefaultBuilder(args)
-                .ConfigureWebHostDefaults(webBuilder => { webBuilder.UseStartup<Startup>(); })
-                .UseNLog()
-                .ConfigureLogging(logging =>
-                {
-                    logging.ClearProviders();
-                    logging.SetMinimumLevel(LogLevel.Trace);
-                })
+                .ConfigureWebHostDefaults(
+                    webBuilder =>
+                    {
+                        webBuilder.ConfigureKestrel(serverOptions =>
+                            {
+                                // Set properties and call methods on options
+                            })
+                            .UseStartup<Startup>();
+                    })
                 .ConfigureAppConfiguration((hostingContext, config) =>
                 {
                     config.SetBasePath(Directory.GetCurrentDirectory());

@@ -49,8 +49,11 @@ namespace Diploma.Apt.Warehouse.Core.Migrations
                     b.Property<string>("ProviderName")
                         .HasColumnType("text");
 
-                    b.Property<int>("Status")
-                        .HasColumnType("integer");
+                    b.Property<DateTime>("ReceivedAt")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<byte>("Status")
+                        .HasColumnType("smallint");
 
                     b.Property<Guid>("StockId")
                         .HasColumnType("uuid");
@@ -155,8 +158,8 @@ namespace Diploma.Apt.Warehouse.Core.Migrations
                     b.Property<decimal>("SellPrice")
                         .HasColumnType("numeric");
 
-                    b.Property<int>("Status")
-                        .HasColumnType("integer");
+                    b.Property<byte>("Status")
+                        .HasColumnType("smallint");
 
                     b.Property<int>("TableKey")
                         .ValueGeneratedOnAdd()

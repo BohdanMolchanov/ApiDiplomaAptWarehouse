@@ -1,20 +1,24 @@
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+using System.Text;
 using AutoMapper;
 using Diploma.Apt.Warehouse.Core.Data;
+using Diploma.Apt.Warehouse.Core.Data.Entities.MongoDB;
 using Diploma.Apt.Warehouse.Core.Data.Helpers.MongoDbConnection;
+using Diploma.Apt.Warehouse.Core.Enums;
 using Diploma.Apt.Warehouse.Core.Extensions.Mapper;
+using Diploma.Apt.Warehouse.Core.Interfaces;
+using Diploma.Apt.Warehouse.Core.Models.DataModel;
+using Diploma.Apt.Warehouse.Core.Repositories;
+using Diploma.Apt.Warehouse.Core.Services;
+using Diploma.Apt.Warehouse.Core.Services.UserService;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.HttpsPolicy;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
+using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 
 namespace Diploma.Apt.Warehouse.Core
@@ -51,6 +55,26 @@ namespace Diploma.Apt.Warehouse.Core
 
             var mapper = mappingConfig.CreateMapper();
             services.AddSingleton(mapper);
+            services.AddScoped<IUserService, UserService>();
+            services.AddScoped<IAccountsService, AccountsService>();
+            var key = Encoding.ASCII.GetBytes(Configuration.GetSection("Secret").Value);
+            services.AddAuthentication(x =>
+                {
+                    x.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                    x.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+                })
+                .AddJwtBearer(x =>
+                {
+                    x.RequireHttpsMetadata = false;
+                    x.SaveToken = true;
+                    x.TokenValidationParameters = new TokenValidationParameters
+                    {
+                        ValidateIssuerSigningKey = true,
+                        IssuerSigningKey = new SymmetricSecurityKey(key),
+                        ValidateIssuer = false,
+                        ValidateAudience = false
+                    };
+                });
             
             services.AddControllers();
             services.AddSwaggerGen(c =>
@@ -60,7 +84,7 @@ namespace Diploma.Apt.Warehouse.Core
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(WarehouseContext warehouseContext, IApplicationBuilder app, IWebHostEnvironment env)
+        public void Configure(WarehouseContext warehouseContext, UserContext userContext, IMapper mapper, IApplicationBuilder app, IWebHostEnvironment env)
         {
             if (env.IsDevelopment())
             {
@@ -74,15 +98,33 @@ namespace Diploma.Apt.Warehouse.Core
                 .AllowAnyOrigin()
                 .AllowAnyMethod()
                 .AllowAnyHeader());
-            
-            warehouseContext.Database.Migrate();
-            
+
+            app.UseMiddleware<JwtMiddleware>();
+            warehouseContext.Database.MigrateAsync().Wait();
+            userContext.MigrateAsync().Wait();
             app.UseHttpsRedirection();
 
             app.UseRouting();
 
+            app.UseAuthentication();
             app.UseAuthorization();
-
+            var usersRepository = new UsersRepository(userContext, mapper);
+            
+            //seed mongodb with admin if not exist
+            if (!usersRepository.ExistsAsync<UserEntity>(Guid.Parse("d98aa779-c640-443f-a594-3f9548f59b17")).Result)
+                userContext.Users.InsertOneAsync(new UserEntity
+                {
+                    Id = Guid.Parse("d98aa779-c640-443f-a594-3f9548f59b17"),
+                    CreatedAt = DateTime.UtcNow,
+                    IsActive = true,
+                    Password = "32fhqtNSApFrwZHrDmrC+IVjLraYpHvwT2iVh4ZrVbM=",
+                    Data = new UserDataModel
+                    {
+                        Email = "molchanovbohdan@gmail.com",
+                        RoleType = RoleTypes.Admin
+                    }
+                }).Wait();
+            
             app.UseEndpoints(endpoints => { endpoints.MapControllers(); });
         }
     }

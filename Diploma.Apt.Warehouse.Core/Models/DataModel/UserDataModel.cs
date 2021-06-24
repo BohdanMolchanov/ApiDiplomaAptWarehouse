@@ -4,7 +4,7 @@ namespace Diploma.Apt.Warehouse.Core.Models.DataModel
 {
     public class UserDataModel
     {
-        public RoleTypes RoleType { get; set; }
+        public string RoleType { get; set; }
         public string Phone { get; set; }
         public string Email { get; set; }
         public string FirstName { get; set; }
